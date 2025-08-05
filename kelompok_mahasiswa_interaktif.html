@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=10.0">
+  <title>Kelompok Mahasiswa</title>
+  <style>
+    html, body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      padding: 20px;
+      margin: 0;
+      -webkit-text-size-adjust: none;
+      touch-action: manipulation;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 8px;
+      width: 240px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 14px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f1f1f1;
+    }
+    .not-found {
+      color: red;
+      margin-top: 10px;
+    }
+    ul {
+      padding-left: 20px;
+      margin-top: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+    ul li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Kelompok Mahasiswa</h2>
+  <div class="search-box">
+    <input type="text" id="searchNIM" placeholder="Masukkan NIM">
+    <button onclick="cariMahasiswa()">Cari</button>
+  </div>
+
+  <div id="output"></div>
+
+  <table id="tabelData" style="display: none;">
+    <thead>
+      <tr>
+        <th>NIM</th>
+        <th>Nama</th>
+        <th>Prodi</th>
+        <th>Jalur</th>
+        <th>Jenis Kelamin</th>
+        <th>Kelompok</th>
+      </tr>
+    </thead>
+    <tbody id="tabelIsi"></tbody>
+  </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    let dataMahasiswa = [];
+
+    fetch('data_mahasiswa.csv')
+      .then(res => res.text())
+      .then(csv => {
+        Papa.parse(csv, {
+          header: true,
+          skipEmptyLines: true,
+          complete: results => {
+            dataMahasiswa = results.data;
+          }
+        });
+      });
+
+    function cariMahasiswa() {
+      const nim = document.getElementById("searchNIM").value.trim();
+      const outputDiv = document.getElementById("output");
+      const tabel = document.getElementById("tabelData");
+      const tbody = document.getElementById("tabelIsi");
+
+      outputDiv.innerHTML = "";
+      tbody.innerHTML = "";
+      tabel.style.display = "none";
+
+      const mahasiswa = dataMahasiswa.find(m => m.NIM === nim);
+
+      if (!mahasiswa) {
+        outputDiv.innerHTML = `<div class="not-found">NIM tidak ditemukan.</div>`;
+        return;
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${mahasiswa.NIM}</td>
+        <td>${mahasiswa.Nama}</td>
+        <td>${mahasiswa.Prodi}</td>
+        <td>${mahasiswa.Jalur}</td>
+        <td>${mahasiswa["Jenis Kelamin"]}</td>
+        <td>${mahasiswa.Kelompok}</td>`;
+      tbody.appendChild(row);
+      tabel.style.display = "table";
+
+      const kelompok = mahasiswa.Kelompok;
+      const anggotaKelompok = dataMahasiswa
+        .filter(m => m.Kelompok === kelompok)
+        .map(m => `<li>${m.Nama}</li>`).join("");
+
+      outputDiv.innerHTML = `
+        <strong><a href="#" onclick="toggleKelompok()" style="color: #2980b9; text-decoration: underline;">
+          Lihat anggota Kelompok ${kelompok}
+        </a></strong>
+        <ul id="daftarKelompok" style="display: none; margin-top: 10px;">
+          ${anggotaKelompok}
+        </ul>
+      `;
+    }
+
+    function toggleKelompok() {
+      const ul = document.getElementById("daftarKelompok");
+      if (ul.style.display === "none") {
+        ul.style.display = "block";
+      } else {
+        ul.style.display = "none";
+      }
+    }
+  </script>
+
+</body>
+</html>
