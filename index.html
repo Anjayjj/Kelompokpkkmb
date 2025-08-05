@@ -104,6 +104,7 @@
         Papa.parse(csv, {
           header: true,
           skipEmptyLines: true,
+          delimiter: ";",
           complete: results => {
             dataMahasiswa = results.data;
           }
