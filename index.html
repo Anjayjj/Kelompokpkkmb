@@ -105,6 +105,8 @@
           header: true,
           skipEmptyLines: true,
           delimiter: ";",
+          transformHeader: header =>
+        header.trim(),
           complete: results => {
             dataMahasiswa = results.data;
           }
